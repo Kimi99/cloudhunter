@@ -1,4 +1,4 @@
-package main
+package aws
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 )
 
-func main() {
+func ListUsers() {
 	fmt.Println("[!] Enter AWS account region: ")
 
 	var region string
@@ -39,6 +39,7 @@ func main() {
 		log.Fatal(err)
 	} else if !slices.Contains(regions, region) {
 		fmt.Println("[-] Region not valid.")
+		return
 	}
 	
 	// Initialize a session in desired region that the SDK will use to load
@@ -59,9 +60,11 @@ func main() {
 	})
 
 	if err != nil {
-		fmt.Println("[-] Error", err)
+		log.Fatal(err)
 		return
 	}
+
+	fmt.Println("[!] Enumerating IAM users...")
 
 	for _, user := range result.Users {
 		if user == nil {
