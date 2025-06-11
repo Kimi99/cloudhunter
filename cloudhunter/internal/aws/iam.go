@@ -1,76 +1,28 @@
 package aws
 
 import (
-	"fmt"
+	"context"
 	"log"
-	"slices"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/iam"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/iam"
+	"github.com/aws/aws-sdk-go-v2/service/iam/types"
 )
 
-func ListUsers() {
-	fmt.Println("[!] Enter AWS account region: ")
+// UserWrapper encapsulates user actions used in the examples.
+// It contains an IAM service client that is used to perform user actions.
+type UserWrapper struct {
+	IamClient *iam.Client
+}
 
-	var region string
-	_, err := fmt.Scanln(&region)
-
-	regions := []string { 
-		"ap-northeast-1",
-		"ap-northeast-2",
-		"ap-northeast-3",
-		"ap-south-1",
-		"ap-southeast-1",
-		"ap-southeast-2",
-		"ca-central-1",
-		"eu-central-1",
-		"eu-north-1",
-		"eu-west-1",
-		"eu-west-2",
-		"eu-west-3",
-		"sa-east-1",
-		"us-east-1",
-		"us-east-2",
-		"us-west-1",
-    	"us-west-2" }
-
-	if err != nil  {
-		log.Fatal(err)
-	} else if !slices.Contains(regions, region) {
-		fmt.Println("[-] Region not valid.")
-		return
-	}
-	
-	// Initialize a session in desired region that the SDK will use to load
-	// credentials from the shared credentials file ~/.aws/credentials.
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(region)},
-	)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Create a IAM service client.
-	svc := iam.New(sess)
-
-	result, err := svc.ListUsers(&iam.ListUsersInput{
-		MaxItems: aws.Int64(10),
+func (wrapper UserWrapper) ListUsersWrapper(ctx context.Context, maxUsers int32) ([]types.User, error) {
+	result, err := wrapper.IamClient.ListUsers(ctx, &iam.ListUsersInput{
+		MaxItems: aws.Int32(maxUsers),
 	})
 
 	if err != nil {
 		log.Fatal(err)
-		return
 	}
 
-	fmt.Println("[!] Enumerating IAM users...")
-
-	for _, user := range result.Users {
-		if user == nil {
-			continue
-		}
-
-		fmt.Printf("[+] Found user! Username: %s; Created Date: %v\n", *user.UserName, user.CreateDate)
-	}
+	return result.Users, err
 }
