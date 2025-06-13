@@ -26,3 +26,15 @@ func (wrapper UserWrapper) ListUsersWrapper(ctx context.Context, maxUsers int32)
 
 	return result.Users, err
 }
+
+func (wrapper UserWrapper) ListAccessKeysWrapper(ctx context.Context, userName string) ([]types.AccessKeyMetadata, error) {
+	result, err := wrapper.IamClient.ListAccessKeys(ctx, &iam.ListAccessKeysInput{
+		UserName: aws.String(userName),
+	})
+	
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return result.AccessKeyMetadata, err
+}

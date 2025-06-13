@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
-
+	"github.com/Kimi99/cloudhunter/cmd/iam"
 	"github.com/spf13/cobra"
 )
 
@@ -15,8 +13,10 @@ stolen or assumed credentials in post-compromise or red team scenarios.`,
 }
 
 func Execute() {
-	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
+	cobra.CheckErr(rootCmd.Execute())
+}
+
+func init() {
+	iam.IamCmd.AddCommand(iam.EnumUsersCmd)
+	rootCmd.AddCommand(iam.IamCmd)
 }
