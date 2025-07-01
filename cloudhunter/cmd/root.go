@@ -8,8 +8,7 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "cloudhunter",
 	Short: "CloudHunter - AWS post-compromise enumeration tool",
-	Long: `CloudHunter is a CLI tool for mapping AWS environments using 
-stolen or assumed credentials in post-compromise or red team scenarios.`,
+	Long: "CloudHunter is a CLI tool for mapping AWS environments using stolen or assumed credentials in post-compromise or red team scenarios.",
 }
 
 func Execute() {
@@ -18,5 +17,8 @@ func Execute() {
 
 func init() {
 	iam.IamCmd.AddCommand(iam.EnumUsersCmd)
+	iam.IamCmd.AddCommand(iam.EnumAccessKeysCmd)
+	iam.IamCmd.AddCommand(iam.EnumUserPoliciesCmd)
+	iam.IamCmd.AddCommand(iam.EnumPolicyCmd)
 	rootCmd.AddCommand(iam.IamCmd)
 }
