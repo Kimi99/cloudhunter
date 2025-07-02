@@ -66,15 +66,15 @@ func (wrapper AwsWrapper) GetUserPolicy(ctx context.Context, username string, po
 	}
 
 	var policyObj any
-    err = json.Unmarshal([]byte(decodedPolicy), &policyObj)
-    if err != nil {
-        log.Fatal(err)
-    }
+	err = json.Unmarshal([]byte(decodedPolicy), &policyObj)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    policy, err := json.MarshalIndent(policyObj, "", "  ")
-    if err != nil {
-        log.Fatal(err)
-    }
+	policy, err := json.MarshalIndent(policyObj, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	return string(policy), err
 }
