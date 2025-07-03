@@ -88,3 +88,15 @@ func (wrapper AwsWrapper) ListGroupsWrapper(ctx context.Context) ([]types.Group,
 
 	return groups.Groups, err
 }
+
+func (wrapper AwsWrapper) ListGroupsForUserWrapper(ctx context.Context, username string) ([]types.Group, error) {
+	group, err := wrapper.IamClient.ListGroupsForUser(ctx, &iam.ListGroupsForUserInput{
+		UserName: &username,
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return group.Groups, err
+}
