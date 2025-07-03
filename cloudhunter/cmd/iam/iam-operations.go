@@ -15,13 +15,12 @@ var region string
 var profile string
 var username string
 var policyName string
+var ctx = context.TODO()
 
 var EnumUsersCmd = &cobra.Command{
 	Use:   "users",
-	Short: "Enumerate AWS IAM Users",
+	Short: "Retrieve information about AWS IAM Users",
 	Run: func(cmd *cobra.Command, args []string) {
-		ctx := context.TODO()
-		
 		fmt.Println("[!] Starting IAM User enumeration...")
 
 		wrapper := initializeAwsWrapper(ctx)
@@ -32,17 +31,15 @@ var EnumUsersCmd = &cobra.Command{
 		}
 
 		for _, user := range users {
-			fmt.Printf("[+] Found user!\n Username: %s; Created Date: %v\n", *user.UserName, user.CreateDate)
+			fmt.Printf("[+] Found user!\n Username: %s\n Created Date: %v\n", *user.UserName, user.CreateDate)
 		}
 	},
 }
 
 var EnumAccessKeysCmd = &cobra.Command{
 	Use:	"accesskeys",
-	Short: 	"Enumerate IAM Access Keys",
+	Short: 	"Retrieve information about IAM Access Keys",
 	Run:	func(cmd *cobra.Command, args []string) {
-		ctx := context.TODO()
-
 		fmt.Println("[!] Starting IAM Access Keys enumeration...")
 
 		wrapper := initializeAwsWrapper(ctx)
@@ -53,22 +50,20 @@ var EnumAccessKeysCmd = &cobra.Command{
 		}
 
 		for _, accessKey := range accessKeys {
-			fmt.Printf("[+] Found access key!\n Access Key Id: %s; Username: %s, Status: %s", *accessKey.AccessKeyId, *accessKey.UserName, accessKey.Status)
+			fmt.Printf("[+] Found access key!\n Access Key Id: %s\n Username: %s\n Status: %s", *accessKey.AccessKeyId, *accessKey.UserName, accessKey.Status)
 		}
 	},
 }
 
 var EnumUserPoliciesCmd = &cobra.Command{
-	Use:	"userpolicies",
-	Short: 	"Enumerate IAM user policies",
+	Use:	"user-policies",
+	Short: 	"Retrieve information about IAM user policies",
 	Run:	func(cmd *cobra.Command, args []string) {
-		ctx := context.TODO()
-
 		fmt.Println("[+] Starting IAM user policies enumeration...")
 
 		wrapper := initializeAwsWrapper(ctx)
 
-		userPolicies, err := wrapper.ListUserPolicies(ctx, username)
+		userPolicies, err := wrapper.ListUserPoliciesWrapper(ctx, username)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -83,18 +78,35 @@ var EnumPolicyCmd = &cobra.Command{
 	Use: 	"get-user-policy",
 	Short: 	"Retrieves the specified inline policy document that is embedded in the specified IAM user",
 	Run:	func(cmd *cobra.Command, args []string) {
-		ctx := context.TODO()
-
 		fmt.Println("[!] Retrieving policy for IAM user...")
 
 		wrapper := initializeAwsWrapper(ctx)
 
-		policy, err := wrapper.GetUserPolicy(ctx, username, policyName)
+		policy, err := wrapper.GetUserPolicyWrapper(ctx, username, policyName)
 		if err != nil {
 			log.Fatal(err)
 		}
 		
 		fmt.Printf("[+] Found user policy document!\n %s", policy)
+	},
+}
+
+var EnumGroupsCmd = &cobra.Command{
+	Use: "groups",
+	Short: "Retrieve information about IAM groups",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("[!] Retrieving groups from IAM...")
+
+		wrapper := initializeAwsWrapper(ctx)
+
+		groups, err := wrapper.ListGroupsWrapper(ctx)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, group := range groups {
+			fmt.Printf("[+] Found group!\n Group ARN: %s\n Group name: %s\n", *group.Arn, *group.GroupName)
+		}
 	},
 }
 
@@ -110,6 +122,8 @@ func init() {
 	EnumPolicyCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
 	EnumPolicyCmd.Flags().StringVarP(&policyName, "policy-name", "n", "pn", "Policy name")
 	EnumPolicyCmd.Flags().StringVarP(&username, "username", "u", "", "Username")
+	EnumGroupsCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
+	EnumGroupsCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
 }
 
 func initializeAwsWrapper(ctx context.Context) aws.AwsWrapper {
