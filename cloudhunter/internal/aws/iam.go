@@ -38,7 +38,7 @@ func (wrapper AwsWrapper) ListAccessKeysWrapper(ctx context.Context) ([]types.Ac
 	return result.AccessKeyMetadata, err
 }
 
-func (wrapper AwsWrapper) ListUserPolicies(ctx context.Context, username string) ([]string, error) {
+func (wrapper AwsWrapper) ListUserPoliciesWrapper(ctx context.Context, username string) ([]string, error) {
 	result, err := wrapper.IamClient.ListUserPolicies(ctx, &iam.ListUserPoliciesInput{
 		UserName: aws.String(username),
 	})
@@ -50,7 +50,7 @@ func (wrapper AwsWrapper) ListUserPolicies(ctx context.Context, username string)
 	return result.PolicyNames, err
 }
 
-func (wrapper AwsWrapper) GetUserPolicy(ctx context.Context, username string, policyName string) (string, error) {
+func (wrapper AwsWrapper) GetUserPolicyWrapper(ctx context.Context, username string, policyName string) (string, error) {
 	result, err := wrapper.IamClient.GetUserPolicy(ctx, &iam.GetUserPolicyInput{
 		UserName: aws.String(username),
 		PolicyName: aws.String(policyName),
@@ -77,4 +77,14 @@ func (wrapper AwsWrapper) GetUserPolicy(ctx context.Context, username string, po
 	}
 
 	return string(policy), err
+}
+
+func (wrapper AwsWrapper) ListGroupsWrapper(ctx context.Context) ([]types.Group, error) {
+	groups, err := wrapper.IamClient.ListGroups(ctx, &iam.ListGroupsInput{})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return groups.Groups, err
 }

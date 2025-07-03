@@ -16,9 +16,5 @@ func Execute() {
 }
 
 func init() {
-	iam.IamCmd.AddCommand(iam.EnumUsersCmd)
-	iam.IamCmd.AddCommand(iam.EnumAccessKeysCmd)
-	iam.IamCmd.AddCommand(iam.EnumUserPoliciesCmd)
-	iam.IamCmd.AddCommand(iam.EnumPolicyCmd)
 	rootCmd.AddCommand(iam.IamCmd)
 }
