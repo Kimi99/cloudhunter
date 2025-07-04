@@ -152,6 +152,42 @@ var EnumSpecificGroupCmd = &cobra.Command{
 	},
 }
 
+var EnumGroupPoliciesCmd = &cobra.Command{
+	Use:   "group-policies",
+	Short: "Retrieve the names of the inline policies that are embedded in the specified IAM group",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("[!] Retrieving group policies...")
+
+		wrapper := initializeAwsWrapper(ctx)
+
+		policies, err := wrapper.ListGroupPoliciesWrapper(ctx, groupName)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		for _, policy := range policies {
+			fmt.Printf("[+] Found policy: \n%s\n", policy)
+		}
+	},
+}
+
+var EnumGroupPolicyDocumentCmd = &cobra.Command{
+	Use:   "get-group-policy-document",
+	Short: "Retrieves the specified inline policy document that is embedded in the specified IAM group",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("[!] Retrieving group policy document...")
+
+		wrapper := initializeAwsWrapper(ctx)
+
+		policyDocument, err := wrapper.GetGroupPolicyDocumentWrapper(ctx, groupName, policyName)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Printf("[+] Found policy document:\n%s", policyDocument)
+	},
+}
+
 func init() {
 	EnumUsersCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
 	EnumUsersCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
@@ -178,6 +214,15 @@ func init() {
 	EnumSpecificGroupCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
 	EnumSpecificGroupCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
 	EnumSpecificGroupCmd.Flags().StringVarP(&groupName, "groupname", "g", "", "Group name")
+
+	EnumGroupPoliciesCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
+	EnumGroupPoliciesCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
+	EnumGroupPoliciesCmd.Flags().StringVarP(&groupName, "groupname", "g", "", "Group name")
+
+	EnumGroupPolicyDocumentCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
+	EnumGroupPolicyDocumentCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
+	EnumGroupPolicyDocumentCmd.Flags().StringVarP(&policyName, "policy-name", "n", "pn", "Policy name")
+	EnumGroupPolicyDocumentCmd.Flags().StringVarP(&groupName, "groupname", "g", "", "Group name")
 }
 
 func initializeAwsWrapper(ctx context.Context) aws.AwsWrapper {

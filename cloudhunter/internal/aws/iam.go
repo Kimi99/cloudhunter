@@ -51,7 +51,7 @@ func (wrapper AwsWrapper) ListUserPoliciesWrapper(ctx context.Context, username 
 }
 
 func (wrapper AwsWrapper) GetUserPolicyWrapper(ctx context.Context, username string, policyName string) (string, error) {
-	result, err := wrapper.IamClient.GetUserPolicy(ctx, &iam.GetUserPolicyInput{
+	policyDocument, err := wrapper.IamClient.GetUserPolicy(ctx, &iam.GetUserPolicyInput{
 		UserName:   aws.String(username),
 		PolicyName: aws.String(policyName),
 	})
@@ -60,7 +60,7 @@ func (wrapper AwsWrapper) GetUserPolicyWrapper(ctx context.Context, username str
 		log.Fatal(err)
 	}
 
-	decodedPolicy, err := url.QueryUnescape(*result.PolicyDocument)
+	decodedPolicy, err := url.QueryUnescape(*policyDocument.PolicyDocument)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -111,4 +111,45 @@ func (wrapper AwsWrapper) GetGroupWrapper(ctx context.Context, groupName string)
 	}
 
 	return group, err
+}
+
+func (wrapper AwsWrapper) ListGroupPoliciesWrapper(ctx context.Context, groupName string) ([]string, error) {
+	policies, err := wrapper.IamClient.ListGroupPolicies(ctx, &iam.ListGroupPoliciesInput{
+		GroupName: &groupName,
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return policies.PolicyNames, err
+}
+
+func (wrapper AwsWrapper) GetGroupPolicyDocumentWrapper(ctx context.Context, groupName string, policyName string) (string, error) {
+	policyDocument, err := wrapper.IamClient.GetGroupPolicy(ctx, &iam.GetGroupPolicyInput{
+		GroupName:  &groupName,
+		PolicyName: &policyName,
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	decodedPolicy, err := url.QueryUnescape(*policyDocument.PolicyDocument)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var policyObj any
+	err = json.Unmarshal([]byte(decodedPolicy), &policyObj)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	policy, err := json.MarshalIndent(policyObj, "", "  ")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return string(policy), err
 }
