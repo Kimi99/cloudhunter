@@ -15,6 +15,7 @@ var region string
 var profile string
 var username string
 var policyName string
+var groupName string
 var ctx = context.TODO()
 
 var EnumUsersCmd = &cobra.Command{
@@ -37,8 +38,8 @@ var EnumUsersCmd = &cobra.Command{
 }
 
 var EnumAccessKeysCmd = &cobra.Command{
-	Use:	"access-keys",
-	Short: 	"Retrieve information about the IAM access keys associated with the specified IAM user",
+	Use:   "access-keys",
+	Short: "Retrieve information about the IAM access keys associated with the specified IAM user",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Starting IAM Access Keys enumeration...")
 
@@ -56,8 +57,8 @@ var EnumAccessKeysCmd = &cobra.Command{
 }
 
 var EnumUserPoliciesCmd = &cobra.Command{
-	Use:	"user-policies",
-	Short: 	"Retrieve names of the inline policies embedded in the specified IAM user",
+	Use:   "user-policies",
+	Short: "Retrieve names of the inline policies embedded in the specified IAM user",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[+] Starting IAM user policies enumeration...")
 
@@ -75,8 +76,8 @@ var EnumUserPoliciesCmd = &cobra.Command{
 }
 
 var EnumUserPolicyDocumentCmd = &cobra.Command{
-	Use: 	"get-user-policy-document",
-	Short: 	"Retrieves the specified inline policy document that is embedded in the specified IAM user",
+	Use:   "get-user-policy-document",
+	Short: "Retrieves the specified inline policy document that is embedded in the specified IAM user",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Retrieving policy document for IAM user...")
 
@@ -86,14 +87,14 @@ var EnumUserPolicyDocumentCmd = &cobra.Command{
 		if err != nil {
 			log.Fatal(err)
 		}
-		
+
 		fmt.Printf("[+] Found user policy document!\n %s", policy)
 	},
 }
 
 var EnumGroupsCmd = &cobra.Command{
-	Use: 	"groups",
-	Short: 	"Retrieve information about IAM groups",
+	Use:   "groups",
+	Short: "Retrieve information about IAM groups",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Retrieving groups from IAM...")
 
@@ -111,9 +112,9 @@ var EnumGroupsCmd = &cobra.Command{
 }
 
 var EnumGroupsForUserCmd = &cobra.Command{
-	Use: 	"user-groups",
-	Short: 	"Retrieve information about the IAM groups that the specified IAM user belongs to",
-	Run: func(cmd *cobra.Command, args[] string) {
+	Use:   "user-groups",
+	Short: "Retrieve information about the IAM groups that the specified IAM user belongs to",
+	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Retrieving user groups from IAM...")
 
 		wrapper := initializeAwsWrapper(ctx)
@@ -125,6 +126,28 @@ var EnumGroupsForUserCmd = &cobra.Command{
 
 		for _, group := range groups {
 			fmt.Printf("[+] Found group!\n Group ARN: %s\n Group name: %s\n", *group.Arn, *group.GroupName)
+		}
+	},
+}
+
+var EnumSpecificGroupCmd = &cobra.Command{
+	Use:   "get-group",
+	Short: "Retrieve information about the specific IAM group",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("[!] Retrieving information about the specified IAM group...")
+
+		wrapper := initializeAwsWrapper(ctx)
+
+		group, err := wrapper.GetGroupWrapper(ctx, groupName)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Printf("[+] Retrieved information about group:\n Group ARN: %s\n Group name: %s\n", *group.Group.Arn, *group.Group.GroupName)
+		fmt.Println("\n[+] Listing out group users...")
+		for _, user := range group.Users {
+			fmt.Printf("Username: %s\nCreated Date: %v\n", *user.UserName, user.CreateDate)
+			fmt.Println()
 		}
 	},
 }
@@ -151,6 +174,10 @@ func init() {
 	EnumGroupsForUserCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
 	EnumGroupsForUserCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
 	EnumGroupsForUserCmd.Flags().StringVarP(&username, "username", "u", "", "Username")
+
+	EnumSpecificGroupCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
+	EnumSpecificGroupCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
+	EnumSpecificGroupCmd.Flags().StringVarP(&groupName, "groupname", "g", "", "Group name")
 }
 
 func initializeAwsWrapper(ctx context.Context) aws.AwsWrapper {
