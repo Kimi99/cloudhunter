@@ -20,4 +20,6 @@ func init() {
 	IamCmd.AddCommand(EnumSpecificGroupCmd)
 	IamCmd.AddCommand(EnumGroupPoliciesCmd)
 	IamCmd.AddCommand(EnumGroupPolicyDocumentCmd)
+
+	IamCmd.AddCommand(EnumRolesCmd)
 }

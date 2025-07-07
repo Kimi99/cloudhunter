@@ -60,23 +60,9 @@ func (wrapper AwsWrapper) GetUserPolicyWrapper(ctx context.Context, username str
 		log.Fatal(err)
 	}
 
-	decodedPolicy, err := url.QueryUnescape(*policyDocument.PolicyDocument)
-	if err != nil {
-		log.Fatal(err)
-	}
+	policy, err := ParseJsonPolicyDocument(*policyDocument.PolicyDocument)
 
-	var policyObj any
-	err = json.Unmarshal([]byte(decodedPolicy), &policyObj)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	policy, err := json.MarshalIndent(policyObj, "", "  ")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return string(policy), err
+	return policy, err
 }
 
 func (wrapper AwsWrapper) ListGroupsWrapper(ctx context.Context) ([]types.Group, error) {
@@ -135,7 +121,23 @@ func (wrapper AwsWrapper) GetGroupPolicyDocumentWrapper(ctx context.Context, gro
 		log.Fatal(err)
 	}
 
-	decodedPolicy, err := url.QueryUnescape(*policyDocument.PolicyDocument)
+	policy, err := ParseJsonPolicyDocument(*policyDocument.PolicyDocument)
+
+	return policy, err
+}
+
+func (wrapper AwsWrapper) ListRolesWrapper(ctx context.Context) ([]types.Role, error) {
+	result, err := wrapper.IamClient.ListRoles(ctx, &iam.ListRolesInput{})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return result.Roles, err
+}
+
+func ParseJsonPolicyDocument(policyData string) (string, error) {
+	decodedPolicy, err := url.QueryUnescape(policyData)
 	if err != nil {
 		log.Fatal(err)
 	}
