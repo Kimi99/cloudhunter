@@ -16,6 +16,7 @@ var profile string
 var username string
 var policyName string
 var groupName string
+var roleName string
 var ctx = context.TODO()
 
 var EnumUsersCmd = &cobra.Command{
@@ -165,8 +166,9 @@ var EnumGroupPoliciesCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
+		fmt.Println("[+] Found following group policies:")
 		for _, policy := range policies {
-			fmt.Printf("[+] Found policy: \n%s\n", policy)
+			fmt.Printf("%s\n", policy)
 		}
 	},
 }
@@ -208,6 +210,43 @@ var EnumRolesCmd = &cobra.Command{
 	},
 }
 
+var EnumRolePoliciesCmd = &cobra.Command{
+	Use:   "role-policies",
+	Short: "Lists the names of the inline policies that are embedded in the specified IAM role.",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("[!] Retrieving role policies...")
+
+		wrapper := initializeAwsWrapper(ctx)
+
+		policies, err := wrapper.ListRolePoliciesWrapper(ctx, roleName)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Println("[+] Found following role policies:")
+		for _, policy := range policies {
+			fmt.Printf("%s", policy)
+		}
+	},
+}
+
+var EnumRolePolicyDocumentCmd = &cobra.Command{
+	Use:   "get-role-policy-document",
+	Short: "Retrieves the specified inline policy document that is embedded with the specified IAM role.",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("[!] Retreiving role policy document...")
+
+		wrapper := initializeAwsWrapper(ctx)
+
+		policyDocument, err := wrapper.GetRolePolicyDocumentWrapper(ctx, roleName, policyName)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Printf("[+] Found policy document:\n%s", policyDocument)
+	},
+}
+
 func init() {
 	EnumUsersCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
 	EnumUsersCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
@@ -241,11 +280,20 @@ func init() {
 
 	EnumGroupPolicyDocumentCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
 	EnumGroupPolicyDocumentCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
-	EnumGroupPolicyDocumentCmd.Flags().StringVarP(&policyName, "policy-name", "n", "pn", "Policy name")
+	EnumGroupPolicyDocumentCmd.Flags().StringVarP(&policyName, "policy-name", "n", "", "Policy name")
 	EnumGroupPolicyDocumentCmd.Flags().StringVarP(&groupName, "groupname", "g", "", "Group name")
 
 	EnumRolesCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
 	EnumRolesCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
+
+	EnumRolePoliciesCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
+	EnumRolePoliciesCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
+	EnumRolePoliciesCmd.Flags().StringVarP(&roleName, "role-name", "n", "", "Role name")
+
+	EnumRolePolicyDocumentCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
+	EnumRolePolicyDocumentCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
+	EnumRolePolicyDocumentCmd.Flags().StringVarP(&policyName, "policy-name", "n", "", "Policy name")
+	EnumRolePolicyDocumentCmd.Flags().StringVarP(&roleName, "rolename", "l", "", "Role name")
 }
 
 func initializeAwsWrapper(ctx context.Context) aws.AwsWrapper {

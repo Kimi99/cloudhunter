@@ -136,6 +136,33 @@ func (wrapper AwsWrapper) ListRolesWrapper(ctx context.Context) ([]types.Role, e
 	return result.Roles, err
 }
 
+func (wrapper AwsWrapper) ListRolePoliciesWrapper(ctx context.Context, roleName string) ([]string, error) {
+	result, err := wrapper.IamClient.ListRolePolicies(ctx, &iam.ListRolePoliciesInput{
+		RoleName: &roleName,
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return result.PolicyNames, err
+}
+
+func (wrapper AwsWrapper) GetRolePolicyDocumentWrapper(ctx context.Context, roleName string, policyName string) (string, error) {
+	policyDocument, err := wrapper.IamClient.GetRolePolicy(ctx, &iam.GetRolePolicyInput{
+		RoleName:   &roleName,
+		PolicyName: &policyName,
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	policy, err := ParseJsonPolicyDocument(*policyDocument.PolicyDocument)
+
+	return policy, err
+}
+
 func ParseJsonPolicyDocument(policyData string) (string, error) {
 	decodedPolicy, err := url.QueryUnescape(policyData)
 	if err != nil {
