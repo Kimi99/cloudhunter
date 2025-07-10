@@ -9,6 +9,7 @@ var IamCmd = &cobra.Command{
 
 func init() {
 	IamCmd.AddCommand(EnumUsersCmd)
+	IamCmd.AddCommand(EnumSpecificUserCmd)
 
 	IamCmd.AddCommand(EnumAccessKeysCmd)
 
@@ -24,4 +25,5 @@ func init() {
 	IamCmd.AddCommand(EnumRolesCmd)
 	IamCmd.AddCommand(EnumRolePoliciesCmd)
 	IamCmd.AddCommand(EnumRolePolicyDocumentCmd)
+	IamCmd.AddCommand(EnumSpecificRoleCmd)
 }

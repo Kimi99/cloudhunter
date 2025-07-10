@@ -13,7 +13,7 @@ import (
 
 var region string
 var profile string
-var username string
+var userName string
 var policyName string
 var groupName string
 var roleName string
@@ -32,9 +32,28 @@ var EnumUsersCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
+		fmt.Println("[+] Found following users:")
 		for _, user := range users {
-			fmt.Printf("[+] Found user!\n Username: %s\n Created Date: %v\n", *user.UserName, user.CreateDate)
+			fmt.Printf("%s\n", *user.UserName)
 		}
+	},
+}
+
+var EnumSpecificUserCmd = &cobra.Command{
+	Use:   "get-user",
+	Short: "Retrieves information about the specified IAM user",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("[!] Retreiving user information...")
+
+		wrapper := initializeAwsWrapper(ctx)
+
+		user, err := wrapper.GetUserWrapper(ctx, userName)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Println("[+] Retrieved user info:")
+		fmt.Printf("ARN: %s\nUsername: %s\nCreated date: %v\n", *user.Arn, *user.UserName, user.CreateDate)
 	},
 }
 
@@ -65,7 +84,7 @@ var EnumUserPoliciesCmd = &cobra.Command{
 
 		wrapper := initializeAwsWrapper(ctx)
 
-		userPolicies, err := wrapper.ListUserPoliciesWrapper(ctx, username)
+		userPolicies, err := wrapper.ListUserPoliciesWrapper(ctx, userName)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -84,7 +103,7 @@ var EnumUserPolicyDocumentCmd = &cobra.Command{
 
 		wrapper := initializeAwsWrapper(ctx)
 
-		policy, err := wrapper.GetUserPolicyWrapper(ctx, username, policyName)
+		policy, err := wrapper.GetUserPolicyWrapper(ctx, userName, policyName)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -120,7 +139,7 @@ var EnumGroupsForUserCmd = &cobra.Command{
 
 		wrapper := initializeAwsWrapper(ctx)
 
-		groups, err := wrapper.ListGroupsForUserWrapper(ctx, username)
+		groups, err := wrapper.ListGroupsForUserWrapper(ctx, userName)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -210,9 +229,26 @@ var EnumRolesCmd = &cobra.Command{
 	},
 }
 
+var EnumSpecificRoleCmd = &cobra.Command{
+	Use:   "get-role",
+	Short: "Retrieve information about the specific IAM role",
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println("[!] Retrieving role information...")
+
+		wrapper := initializeAwsWrapper(ctx)
+
+		role, err := wrapper.GetRoleWrapper(ctx, roleName)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		fmt.Printf("[+] Retrieved information about role:\n Role ARN: %s\n Role name: %s\n Assume role policy document:\n%s", *role.Role.Arn, *role.Role.RoleName, aws.ParseJsonPolicyDocument(*role.Role.AssumeRolePolicyDocument))
+	},
+}
+
 var EnumRolePoliciesCmd = &cobra.Command{
 	Use:   "role-policies",
-	Short: "Lists the names of the inline policies that are embedded in the specified IAM role.",
+	Short: "Retrieve the names of the inline policies that are embedded in the specified IAM role",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Retrieving role policies...")
 
@@ -232,7 +268,7 @@ var EnumRolePoliciesCmd = &cobra.Command{
 
 var EnumRolePolicyDocumentCmd = &cobra.Command{
 	Use:   "get-role-policy-document",
-	Short: "Retrieves the specified inline policy document that is embedded with the specified IAM role.",
+	Short: "Retrieves the specified inline policy document that is embedded with the specified IAM role",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Retreiving role policy document...")
 
@@ -248,27 +284,31 @@ var EnumRolePolicyDocumentCmd = &cobra.Command{
 }
 
 func init() {
-	EnumUsersCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
-	EnumUsersCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
-
 	EnumAccessKeysCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
 	EnumAccessKeysCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
 
+	EnumUsersCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
+	EnumUsersCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
+
+	EnumSpecificUserCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
+	EnumSpecificUserCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
+	EnumSpecificUserCmd.Flags().StringVarP(&userName, "username", "u", "", "Username")
+
 	EnumUserPoliciesCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
 	EnumUserPoliciesCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
-	EnumUserPoliciesCmd.Flags().StringVarP(&username, "username", "u", "", "Username")
+	EnumUserPoliciesCmd.Flags().StringVarP(&userName, "username", "u", "", "Username")
 
 	EnumUserPolicyDocumentCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
 	EnumUserPolicyDocumentCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
 	EnumUserPolicyDocumentCmd.Flags().StringVarP(&policyName, "policy-name", "n", "pn", "Policy name")
-	EnumUserPolicyDocumentCmd.Flags().StringVarP(&username, "username", "u", "", "Username")
+	EnumUserPolicyDocumentCmd.Flags().StringVarP(&userName, "username", "u", "", "Username")
 
 	EnumGroupsCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
 	EnumGroupsCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
 
 	EnumGroupsForUserCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
 	EnumGroupsForUserCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
-	EnumGroupsForUserCmd.Flags().StringVarP(&username, "username", "u", "", "Username")
+	EnumGroupsForUserCmd.Flags().StringVarP(&userName, "username", "u", "", "Username")
 
 	EnumSpecificGroupCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
 	EnumSpecificGroupCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
@@ -294,6 +334,10 @@ func init() {
 	EnumRolePolicyDocumentCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
 	EnumRolePolicyDocumentCmd.Flags().StringVarP(&policyName, "policy-name", "n", "", "Policy name")
 	EnumRolePolicyDocumentCmd.Flags().StringVarP(&roleName, "rolename", "l", "", "Role name")
+
+	EnumSpecificRoleCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
+	EnumSpecificRoleCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
+	EnumSpecificRoleCmd.Flags().StringVarP(&roleName, "role-name", "n", "", "Role name")
 }
 
 func initializeAwsWrapper(ctx context.Context) aws.AwsWrapper {

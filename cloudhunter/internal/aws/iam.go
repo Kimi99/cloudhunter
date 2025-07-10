@@ -18,28 +18,40 @@ type AwsWrapper struct {
 	IamClient *iam.Client
 }
 
-func (wrapper AwsWrapper) ListUsersWrapper(ctx context.Context) ([]types.User, error) {
-	result, err := wrapper.IamClient.ListUsers(ctx, &iam.ListUsersInput{})
+func (wrapper AwsWrapper) ListAccessKeysWrapper(ctx context.Context) ([]types.AccessKeyMetadata, error) {
+	accessKeys, err := wrapper.IamClient.ListAccessKeys(ctx, &iam.ListAccessKeysInput{})
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return result.Users, err
+	return accessKeys.AccessKeyMetadata, err
 }
 
-func (wrapper AwsWrapper) ListAccessKeysWrapper(ctx context.Context) ([]types.AccessKeyMetadata, error) {
-	result, err := wrapper.IamClient.ListAccessKeys(ctx, &iam.ListAccessKeysInput{})
+func (wrapper AwsWrapper) ListUsersWrapper(ctx context.Context) ([]types.User, error) {
+	users, err := wrapper.IamClient.ListUsers(ctx, &iam.ListUsersInput{})
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return result.AccessKeyMetadata, err
+	return users.Users, err
+}
+
+func (wrapper AwsWrapper) GetUserWrapper(ctx context.Context, userName string) (types.User, error) {
+	user, err := wrapper.IamClient.GetUser(ctx, &iam.GetUserInput{
+		UserName: &userName,
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return *user.User, err
 }
 
 func (wrapper AwsWrapper) ListUserPoliciesWrapper(ctx context.Context, username string) ([]string, error) {
-	result, err := wrapper.IamClient.ListUserPolicies(ctx, &iam.ListUserPoliciesInput{
+	policies, err := wrapper.IamClient.ListUserPolicies(ctx, &iam.ListUserPoliciesInput{
 		UserName: aws.String(username),
 	})
 
@@ -47,7 +59,7 @@ func (wrapper AwsWrapper) ListUserPoliciesWrapper(ctx context.Context, username 
 		log.Fatal(err)
 	}
 
-	return result.PolicyNames, err
+	return policies.PolicyNames, err
 }
 
 func (wrapper AwsWrapper) GetUserPolicyWrapper(ctx context.Context, username string, policyName string) (string, error) {
@@ -60,7 +72,7 @@ func (wrapper AwsWrapper) GetUserPolicyWrapper(ctx context.Context, username str
 		log.Fatal(err)
 	}
 
-	policy, err := ParseJsonPolicyDocument(*policyDocument.PolicyDocument)
+	policy := ParseJsonPolicyDocument(*policyDocument.PolicyDocument)
 
 	return policy, err
 }
@@ -121,7 +133,7 @@ func (wrapper AwsWrapper) GetGroupPolicyDocumentWrapper(ctx context.Context, gro
 		log.Fatal(err)
 	}
 
-	policy, err := ParseJsonPolicyDocument(*policyDocument.PolicyDocument)
+	policy := ParseJsonPolicyDocument(*policyDocument.PolicyDocument)
 
 	return policy, err
 }
@@ -134,6 +146,18 @@ func (wrapper AwsWrapper) ListRolesWrapper(ctx context.Context) ([]types.Role, e
 	}
 
 	return result.Roles, err
+}
+
+func (wrapper AwsWrapper) GetRoleWrapper(ctx context.Context, roleName string) (*iam.GetRoleOutput, error) {
+	role, err := wrapper.IamClient.GetRole(ctx, &iam.GetRoleInput{
+		RoleName: &roleName,
+	})
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return role, err
 }
 
 func (wrapper AwsWrapper) ListRolePoliciesWrapper(ctx context.Context, roleName string) ([]string, error) {
@@ -158,12 +182,12 @@ func (wrapper AwsWrapper) GetRolePolicyDocumentWrapper(ctx context.Context, role
 		log.Fatal(err)
 	}
 
-	policy, err := ParseJsonPolicyDocument(*policyDocument.PolicyDocument)
+	policy := ParseJsonPolicyDocument(*policyDocument.PolicyDocument)
 
 	return policy, err
 }
 
-func ParseJsonPolicyDocument(policyData string) (string, error) {
+func ParseJsonPolicyDocument(policyData string) string {
 	decodedPolicy, err := url.QueryUnescape(policyData)
 	if err != nil {
 		log.Fatal(err)
@@ -180,5 +204,5 @@ func ParseJsonPolicyDocument(policyData string) (string, error) {
 		log.Fatal(err)
 	}
 
-	return string(policy), err
+	return string(policy)
 }
