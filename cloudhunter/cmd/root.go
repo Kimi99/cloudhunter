@@ -17,4 +17,5 @@ func Execute() {
 
 func init() {
 	rootCmd.AddCommand(iam.IamCmd)
+	rootCmd.AddCommand(s3.s3Cmd)
 }

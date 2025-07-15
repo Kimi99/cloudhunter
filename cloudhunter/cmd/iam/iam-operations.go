@@ -7,7 +7,6 @@ import (
 
 	"github.com/Kimi99/cloudhunter/internal/aws"
 	"github.com/Kimi99/cloudhunter/internal/shared"
-	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/spf13/cobra"
 )
 
@@ -25,7 +24,7 @@ var EnumUsersCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Starting IAM User enumeration...")
 
-		wrapper := initializeAwsWrapper(ctx)
+		wrapper := aws.InitializeIamWrapper(ctx, region, profile)
 
 		users, err := wrapper.ListUsersWrapper(ctx)
 		if err != nil {
@@ -45,7 +44,7 @@ var EnumSpecificUserCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Retreiving user information...")
 
-		wrapper := initializeAwsWrapper(ctx)
+		wrapper := aws.InitializeIamWrapper(ctx, region, profile)
 
 		user, err := wrapper.GetUserWrapper(ctx, userName)
 		if err != nil {
@@ -63,7 +62,7 @@ var EnumAccessKeysCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Starting IAM Access Keys enumeration...")
 
-		wrapper := initializeAwsWrapper(ctx)
+		wrapper := aws.InitializeIamWrapper(ctx, region, profile)
 
 		accessKeys, err := wrapper.ListAccessKeysWrapper(ctx)
 		if err != nil {
@@ -82,7 +81,7 @@ var EnumUserPoliciesCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[+] Starting IAM user policies enumeration...")
 
-		wrapper := initializeAwsWrapper(ctx)
+		wrapper := aws.InitializeIamWrapper(ctx, region, profile)
 
 		userPolicies, err := wrapper.ListUserPoliciesWrapper(ctx, userName)
 		if err != nil {
@@ -101,7 +100,7 @@ var EnumUserPolicyDocumentCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Retrieving policy document for IAM user...")
 
-		wrapper := initializeAwsWrapper(ctx)
+		wrapper := aws.InitializeIamWrapper(ctx, region, profile)
 
 		policy, err := wrapper.GetUserPolicyWrapper(ctx, userName, policyName)
 		if err != nil {
@@ -118,7 +117,7 @@ var EnumGroupsCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Retrieving groups from IAM...")
 
-		wrapper := initializeAwsWrapper(ctx)
+		wrapper := aws.InitializeIamWrapper(ctx, region, profile)
 
 		groups, err := wrapper.ListGroupsWrapper(ctx)
 		if err != nil {
@@ -137,7 +136,7 @@ var EnumGroupsForUserCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Retrieving user groups from IAM...")
 
-		wrapper := initializeAwsWrapper(ctx)
+		wrapper := aws.InitializeIamWrapper(ctx, region, profile)
 
 		groups, err := wrapper.ListGroupsForUserWrapper(ctx, userName)
 		if err != nil {
@@ -156,7 +155,7 @@ var EnumSpecificGroupCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Retrieving information about the specified IAM group...")
 
-		wrapper := initializeAwsWrapper(ctx)
+		wrapper := aws.InitializeIamWrapper(ctx, region, profile)
 
 		group, err := wrapper.GetGroupWrapper(ctx, groupName)
 		if err != nil {
@@ -178,7 +177,7 @@ var EnumGroupPoliciesCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Retrieving group policies...")
 
-		wrapper := initializeAwsWrapper(ctx)
+		wrapper := aws.InitializeIamWrapper(ctx, region, profile)
 
 		policies, err := wrapper.ListGroupPoliciesWrapper(ctx, groupName)
 		if err != nil {
@@ -198,7 +197,7 @@ var EnumGroupPolicyDocumentCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Retrieving group policy document...")
 
-		wrapper := initializeAwsWrapper(ctx)
+		wrapper := aws.InitializeIamWrapper(ctx, region, profile)
 
 		policyDocument, err := wrapper.GetGroupPolicyDocumentWrapper(ctx, groupName, policyName)
 		if err != nil {
@@ -215,7 +214,7 @@ var EnumRolesCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Retrieving roles...")
 
-		wrapper := initializeAwsWrapper(ctx)
+		wrapper := aws.InitializeIamWrapper(ctx, region, profile)
 
 		roles, err := wrapper.ListRolesWrapper(ctx)
 		if err != nil {
@@ -235,14 +234,14 @@ var EnumSpecificRoleCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Retrieving role information...")
 
-		wrapper := initializeAwsWrapper(ctx)
+		wrapper := aws.InitializeIamWrapper(ctx, region, profile)
 
 		role, err := wrapper.GetRoleWrapper(ctx, roleName)
 		if err != nil {
 			log.Fatal(err)
 		}
 
-		fmt.Printf("[+] Retrieved information about role:\n Role ARN: %s\n Role name: %s\n Assume role policy document:\n%s", *role.Role.Arn, *role.Role.RoleName, aws.ParseJsonPolicyDocument(*role.Role.AssumeRolePolicyDocument))
+		fmt.Printf("[+] Retrieved information about role:\n Role ARN: %s\n Role name: %s\n Assume role policy document:\n%s", *role.Role.Arn, *role.Role.RoleName, shared.ParseJsonPolicyDocument(*role.Role.AssumeRolePolicyDocument))
 	},
 }
 
@@ -252,7 +251,7 @@ var EnumRolePoliciesCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Retrieving role policies...")
 
-		wrapper := initializeAwsWrapper(ctx)
+		wrapper := aws.InitializeIamWrapper(ctx, region, profile)
 
 		policies, err := wrapper.ListRolePoliciesWrapper(ctx, roleName)
 		if err != nil {
@@ -272,7 +271,7 @@ var EnumRolePolicyDocumentCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Retreiving role policy document...")
 
-		wrapper := initializeAwsWrapper(ctx)
+		wrapper := aws.InitializeIamWrapper(ctx, region, profile)
 
 		policyDocument, err := wrapper.GetRolePolicyDocumentWrapper(ctx, roleName, policyName)
 		if err != nil {
@@ -338,16 +337,4 @@ func init() {
 	EnumSpecificRoleCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
 	EnumSpecificRoleCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
 	EnumSpecificRoleCmd.Flags().StringVarP(&roleName, "role-name", "n", "", "Role name")
-}
-
-func initializeAwsWrapper(ctx context.Context) aws.AwsWrapper {
-	cfg, err := shared.GetAWSConfig(ctx, region, profile)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	client := iam.NewFromConfig(cfg)
-	wrapper := aws.AwsWrapper{IamClient: client}
-
-	return wrapper
 }
