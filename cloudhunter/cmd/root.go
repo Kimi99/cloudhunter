@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/Kimi99/cloudhunter/cmd/iam"
+	"github.com/Kimi99/cloudhunter/cmd/s3"
 	"github.com/spf13/cobra"
 )
 
@@ -17,5 +18,5 @@ func Execute() {
 
 func init() {
 	rootCmd.AddCommand(iam.IamCmd)
-	rootCmd.AddCommand(s3.s3Cmd)
+	rootCmd.AddCommand(s3.S3Cmd)
 }
