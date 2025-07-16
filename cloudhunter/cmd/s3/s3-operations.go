@@ -6,6 +6,7 @@ import (
 	"log"
 
 	"github.com/Kimi99/cloudhunter/internal/aws"
+	"github.com/Kimi99/cloudhunter/internal/shared"
 	"github.com/spf13/cobra"
 )
 
@@ -28,24 +29,13 @@ var ListBucketCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		printTree(objects, "  ")
+		shared.RenderDirectoryTree(objects, "  ")
 	},
-}
-
-func printTree(nodes []*aws.S3Node, indent string) {
-	for _, node := range nodes {
-		if node.IsFolder {
-			fmt.Printf("%s %s\n", indent, node.Name)
-			printTree(node.Children, indent+"  ")
-		} else {
-			fmt.Printf("%s %s\n", indent, node.Name)
-		}
-	}
 }
 
 func init() {
 	ListBucketCmd.Flags().StringVarP(&region, "region", "r", "", "AWS region")
 	ListBucketCmd.Flags().StringVarP(&profile, "profile", "p", "", "AWS profile")
 	ListBucketCmd.Flags().StringVarP(&bucketName, "bucket-name", "b", "", "Name of S3 bucket")
-	ListBucketCmd.Flags().BoolVarP(&anonymousMode, "anonymous-mode", "a", true, "Use anonymous authentication (true by default)")
+	ListBucketCmd.Flags().BoolVarP(&anonymousMode, "anonymous-mode", "a", false, "Use anonymous authentication")
 }

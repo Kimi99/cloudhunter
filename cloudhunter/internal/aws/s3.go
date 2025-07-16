@@ -37,14 +37,8 @@ func InitializeS3Wrapper(ctx context.Context, region string, profile string, ano
 	return S3Wrapper{S3Client: client}
 }
 
-type S3Node struct {
-	Name     string
-	IsFolder bool
-	Children []*S3Node
-}
-
 // Function that retrieves objects from S3 bucket. First folders and then recursively files from each folder it has access to
-func (wrapper S3Wrapper) ListS3Bucket(ctx context.Context, bucket string, prefix string) ([]*S3Node, error) {
+func (wrapper S3Wrapper) ListS3Bucket(ctx context.Context, bucket string, prefix string) ([]*shared.S3Node, error) {
 	input := &s3.ListObjectsV2Input{
 		Bucket:    aws.String(bucket),
 		Prefix:    aws.String(prefix),
@@ -53,7 +47,7 @@ func (wrapper S3Wrapper) ListS3Bucket(ctx context.Context, bucket string, prefix
 
 	paginator := s3.NewListObjectsV2Paginator(wrapper.S3Client, input)
 
-	var nodes []*S3Node
+	var nodes []*shared.S3Node
 
 	for paginator.HasMorePages() {
 		output, err := paginator.NextPage(ctx)
@@ -63,7 +57,7 @@ func (wrapper S3Wrapper) ListS3Bucket(ctx context.Context, bucket string, prefix
 
 		for _, cp := range output.CommonPrefixes {
 			name := strings.TrimPrefix(*cp.Prefix, prefix)
-			node := &S3Node{
+			node := &shared.S3Node{
 				Name:     name,
 				IsFolder: true,
 			}
@@ -88,7 +82,7 @@ func (wrapper S3Wrapper) ListS3Bucket(ctx context.Context, bucket string, prefix
 			}
 
 			name := strings.TrimPrefix(*obj.Key, prefix)
-			node := &S3Node{
+			node := &shared.S3Node{
 				Name:     name,
 				IsFolder: false,
 			}
