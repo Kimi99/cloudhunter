@@ -8,5 +8,7 @@ var S3Cmd = &cobra.Command{
 }
 
 func init() {
-	S3Cmd.AddCommand(ListBucketCmd)
+	S3Cmd.AddCommand(ListBucketContentCmd)
+	S3Cmd.AddCommand(ListBucketsCmd)
+	S3Cmd.AddCommand(DumpBucketCmd)
 }

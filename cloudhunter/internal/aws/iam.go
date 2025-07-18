@@ -17,6 +17,18 @@ type IamWrapper struct {
 	IamClient *iam.Client
 }
 
+func InitializeIamWrapper(ctx context.Context, region string, profile string) IamWrapper {
+	cfg, err := shared.GetAWSConfig(ctx, region, profile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	client := iam.NewFromConfig(cfg)
+	wrapper := IamWrapper{IamClient: client}
+
+	return wrapper
+}
+
 func (wrapper IamWrapper) ListAccessKeysWrapper(ctx context.Context) ([]types.AccessKeyMetadata, error) {
 	accessKeys, err := wrapper.IamClient.ListAccessKeys(ctx, &iam.ListAccessKeysInput{})
 
@@ -184,16 +196,4 @@ func (wrapper IamWrapper) GetRolePolicyDocumentWrapper(ctx context.Context, role
 	policy := shared.ParseJsonPolicyDocument(*policyDocument.PolicyDocument)
 
 	return policy, err
-}
-
-func InitializeIamWrapper(ctx context.Context, region string, profile string) IamWrapper {
-	cfg, err := shared.GetAWSConfig(ctx, region, profile)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	client := iam.NewFromConfig(cfg)
-	wrapper := IamWrapper{IamClient: client}
-
-	return wrapper
 }
