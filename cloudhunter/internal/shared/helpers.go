@@ -27,11 +27,11 @@ func ParseJsonPolicyDocument(policyData string) string {
 	return string(policy)
 }
 
-func RenderDirectoryTree(nodes []*S3Node, indent string) {
+func RenderBucketContent(nodes []*S3Node, indent string) {
 	for _, node := range nodes {
 		if node.IsFolder {
 			fmt.Printf("%s %s\n", indent, node.Name)
-			RenderDirectoryTree(node.Children, indent+"  ")
+			RenderBucketContent(node.Children, indent+"  ")
 		} else {
 			fmt.Printf("%s %s\n", indent, node.Name)
 		}
