@@ -19,7 +19,7 @@ var ctx = context.TODO()
 
 var ListBucketContentCmd = &cobra.Command{
 	Use:   "list-content",
-	Short: "Retrieve contents of S3 bucket, if there is any",
+	Short: "List contents of S3 bucket, if there is any",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Retrieving data from bucket...")
 
@@ -40,7 +40,7 @@ var ListBucketContentCmd = &cobra.Command{
 
 var ListBucketsCmd = &cobra.Command{
 	Use:   "buckets",
-	Short: "Try to retrieve list of S3 buckets present on account. This requires the following policy action: s3:ListAllMyBuckets.",
+	Short: "Try to retrieve list of S3 buckets present on account",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Retrieving list of S3 buckets...")
 
@@ -65,7 +65,7 @@ var ListBucketsCmd = &cobra.Command{
 
 var DumpBucketCmd = &cobra.Command{
 	Use:   "dump-bucket",
-	Short: "Try to retrieve the contents of specified S3 bucket.",
+	Short: "Dump the contents of specified S3 bucket in a local folder",
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("[!] Retrieving contents of the bucket...")
 
